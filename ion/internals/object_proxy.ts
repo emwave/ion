@@ -18,7 +18,10 @@ export function createProxyHandler(
       v: any,
       r: any,
     ): boolean => {
-      if ((p in t) || !overWrite) {
+      if (
+        ((lowerProp ? p.toString().toLowerCase() : p.toString()) in t) &&
+        !overWrite
+      ) {
         return false;
       }
       t[lowerProp ? p.toString().toLowerCase() : p.toString()] = v;

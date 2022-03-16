@@ -7,8 +7,11 @@ import {
 import { IonRequest } from "../server/request.ts";
 
 const req = new IonRequest(
-  new Request("http://example.com/books/1", {
+  new Request("http://example.com/books/1?orderBy=desc", {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
   }),
   new URLPattern({ pathname: "/books/:bookId" }),
 );

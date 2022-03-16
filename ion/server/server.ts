@@ -3,6 +3,7 @@
 import { IonEventEmitter } from "../internals/event_emitter.ts";
 import { IonRequest } from "./request.ts";
 import { IonResponse } from "./response.ts";
+import { createProxyHandler } from "../internals/object_proxy.ts";
 
 interface IonServerOptions {
   host?: string;
@@ -19,6 +20,7 @@ export class IonServer {
       onComplete: (cb: () => any) => any;
     }) => void
   >;
+  public refs: { [name: string]: any } = {};
 
   constructor(public options?: IonServerOptions) {
     this._eventEmitter = new IonEventEmitter();
@@ -28,6 +30,7 @@ export class IonServer {
       port: options?.port ?? 8080,
     };
     this._middlewares = [];
+    this.refs = new Proxy({}, createProxyHandler());
   }
 
   public use(

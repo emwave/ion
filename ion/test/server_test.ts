@@ -1,7 +1,12 @@
-import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+import {
+  assertEquals,
+  assertExists,
+  assertThrows,
+} from "https://deno.land/std/testing/asserts.ts";
 import { IonServer } from "../server/server.ts";
 
 const s = new IonServer();
+s.refs.x = 42;
 
 Deno.test("# Sever default host", () => {
   assertEquals(s.options?.host, "0.0.0.0");
@@ -32,4 +37,17 @@ Deno.test("# Sever route match", () => {
   const url = new URL(req.url);
   const pattern = new URLPattern({ pathname: url.pathname });
   assertEquals(s.isRouteMatch(pattern, req.url), true);
+});
+
+Deno.test("# Sever refs", () => {
+  assertExists(s.refs.x);
+});
+
+Deno.test("# Request query Setter", () => {
+  assertThrows(
+    () => {
+      s.refs.x = 42;
+    },
+    TypeError,
+  );
 });

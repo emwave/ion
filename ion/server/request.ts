@@ -30,7 +30,7 @@ export class IonRequest {
   }
 
   public get headers() {
-    const headers = new Proxy({}, createProxyHandler(true, false));
+    const headers = new Proxy({}, createProxyHandler(true));
 
     for (const [name, value] of this._req.headers.entries()) {
       headers[name] = value;
