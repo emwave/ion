@@ -83,15 +83,38 @@ server.on("OPTIONS /", () => null);
 ## Built-in events
 
 ```ts
+// on server listen
 server.on("LISTEN", ({ host, port }: any) => console.log(host, port));
+
+// on request (a.k.a middleware)
+server.on("REQ", ({ req, res, onComplete }: any) => console.log(req, res, onComplete) )
+```
+
+## Middleware Support
+
+```ts
+// cors middleware
+server.use(({ res }: any) => {
+  res.headers["Access-Control-Allow-Origin"] = "*"
+})
+
+// alternative way (preferred)
+server.on("REQ", ({ res }: any) => {
+  res.headers["Access-Control-Allow-Origin"] = "*"
+})
+
+server.on("REQ", ({ onComplete }) => {
+  const start - performance.now()
+  onComplete(() => {
+    const end = performance.now()
+    console.log(`RequestTime: ${end - start}ms`)
+  })
+})
 ```
 
 ## Soon
 
 ```ts
-// middleware support
-server.use(() => {});
-
 // body parser(s)
 server.on(({ req }: any) => console.log(req.body));
 ```
