@@ -49,6 +49,7 @@ server.on("GET /books/:bookId", ({ req }: any) => {
   console.log(req.headers); // Request Headers
   console.log(req.query); // { language: "en" }
   console.log(req.params); // { bookId: "1" }
+  console.log(req.body); // { name: "Deno" } (POST body: application/json only)
 });
 ```
 
@@ -120,11 +121,4 @@ server.on("REQ", ({ onComplete }) => {
     console.log(`RequestTime: ${end - start}ms`)
   })
 })
-```
-
-## Soon
-
-```ts
-// body parser(s)
-server.on("POST /book", ({ req }: any) => console.log(req.body));
 ```
