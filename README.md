@@ -7,6 +7,7 @@ REST/GraphQL and many others.
 ## Quick start
 
 ```ts
+// app.ts
 import { Server } from "https://deno.land/x/ion@0.1.1/mod.ts";
 
 const server = new Server();
@@ -14,6 +15,11 @@ const server = new Server();
 server.on("GET /", () => "Welcome!");
 
 await server.listen();
+```
+
+## Run server
+```properties
+deno run --allow-net app.ts
 ```
 
 ## IonContext
