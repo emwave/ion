@@ -116,5 +116,5 @@ server.on("REQ", ({ onComplete }) => {
 
 ```ts
 // body parser(s)
-server.on(({ req }: any) => console.log(req.body));
+server.on("POST /book", ({ req }: any) => console.log(req.body));
 ```
