@@ -15,7 +15,7 @@ export class IonRequest {
   }
 
   public get headers() {
-    const headers = new Proxy({}, createProxyHandler(true, true));
+    const headers = new Proxy({}, createProxyHandler(true, false));
 
     for (const [name, value] of this._req.headers.entries()) {
       headers[name] = value;

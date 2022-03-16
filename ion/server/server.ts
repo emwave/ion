@@ -1,6 +1,5 @@
 // Copyright © 2022 the Ion authors. All rights reserved. MIT license.
 
-import { createProxyHandler } from "../internals/object_proxy.ts";
 import { IonEventEmitter } from "../internals/event_emitter.ts";
 import { IonRequest } from "./request.ts";
 import { IonResponse } from "./response.ts";
@@ -17,6 +16,11 @@ export class IonServer {
   constructor(public options?: IonServerOptions) {
     this._eventEmitter = new IonEventEmitter();
     this._routes = {};
+
+    this.options = {
+      host: options?.host ?? "0.0.0.0",
+      port: options?.port ?? 8080,
+    };
   }
 
   public on<F extends Function>(type: string, cb: F) {
@@ -49,14 +53,11 @@ export class IonServer {
   }
 
   public async listen(cb?: (opt: { host: string; port: number }) => any) {
-    const options = {
-      host: this.options && this.options.host ? this.options.host : "0.0.0.0",
-      port: this.options && this.options.port ? this.options.port : 8080,
-    };
+    const listener: Deno.Listener = Deno.listen({
+      port: this.options?.port ?? 8080,
+    });
 
-    const listener: Deno.Listener = Deno.listen({ port: options.port });
-
-    this._eventEmitter.dispatch("LISTEN", options);
+    this._eventEmitter.dispatch("LISTEN", this.options);
 
     for await (const conn of listener) {
       this._handle(conn);
@@ -77,6 +78,14 @@ export class IonServer {
     ]);
   }
 
+  public isMethodDefined(type: string): boolean {
+    return type in this._routes;
+  }
+
+  public isRouteMatch(pattern: URLPattern, url: string): boolean {
+    return pattern.test(url);
+  }
+
   private async _handle(conn: Deno.Conn) {
     const httpConn: Deno.HttpConn = Deno.serveHttp(conn);
 
@@ -84,9 +93,9 @@ export class IonServer {
       try {
         let found: boolean = false;
 
-        if (request.method in this._routes) {
+        if (this.isMethodDefined(request.method)) {
           for (const [pattern, handler] of this._routes[request.method]) {
-            if (pattern.test(request.url)) {
+            if (this.isRouteMatch(pattern, request.url)) {
               const req: IonRequest = new IonRequest(request, pattern);
               const res: IonResponse = new IonResponse();
 
@@ -98,7 +107,8 @@ export class IonServer {
                 res.headers["Content-Type"] = "text/plain";
               } else if (
                 typeof response === "object" &&
-                !res.headers["Content-Type"]
+                !res.headers["Content-Type"] &&
+                response !== null
               ) {
                 res.headers["Content-Type"] = "application/json";
               }
