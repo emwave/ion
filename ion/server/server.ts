@@ -119,6 +119,8 @@ export class IonServer {
         const req: IonRequest = new IonRequest(request);
         const res: IonResponse = new IonResponse();
 
+        await req.parseBody();
+
         for (const middleware of this._middlewares) {
           middleware({ req, res, onComplete });
         }

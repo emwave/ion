@@ -1,10 +1,12 @@
 // Copyright © 2022 the Ion authors. All rights reserved. MIT license.
 
 import { createProxyHandler } from "../internals/object_proxy.ts";
+import { IonBodyParser } from "./body_parser.ts";
 
 export class IonRequest {
   public readonly method: string;
   public readonly url: URL;
+  private _body: null | { [name: string]: any } = null;
 
   constructor(
     private _req: Request,
@@ -16,6 +18,15 @@ export class IonRequest {
 
   public setPattern(pattern: URLPattern) {
     this._pattern = pattern;
+  }
+
+  public get body() {
+    return this._body;
+  }
+
+  public async parseBody() {
+    const parser = new IonBodyParser(this._req);
+    this._body = await parser.parse();
   }
 
   public get headers() {

@@ -18,6 +18,7 @@ await server.listen();
 ```
 
 ## Run server
+
 ```properties
 deno run --allow-net app.ts
 ```
@@ -93,7 +94,10 @@ server.on("OPTIONS /", () => null);
 server.on("LISTEN", ({ host, port }: any) => console.log(host, port));
 
 // on request (a.k.a middleware)
-server.on("REQ", ({ req, res, onComplete }: any) => console.log(req, res, onComplete) )
+server.on(
+  "REQ",
+  ({ req, res, onComplete }: any) => console.log(req, res, onComplete),
+);
 ```
 
 ## Middleware Support
