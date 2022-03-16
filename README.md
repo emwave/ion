@@ -122,3 +122,13 @@ server.on("REQ", ({ onComplete }) => {
   })
 })
 ```
+
+## IonRefs (a.k.a global props)
+
+```ts
+server.refs.x = 42
+
+server.on("GET /", ({ req, res}: any, refs: any) => {
+  console.log(refs.x) // 42
+});
+```
