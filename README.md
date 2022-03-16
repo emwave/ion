@@ -7,7 +7,7 @@ REST/GraphQL and many others.
 ## Quick start
 
 ```ts
-import { Server } from "https://deno.land/x/ion@0.1.0/mod.ts";
+import { Server } from "https://deno.land/x/ion@0.1.1/mod.ts";
 
 const server = new Server();
 
