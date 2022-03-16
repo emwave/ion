@@ -12,15 +12,34 @@ interface IonServerOptions {
 export class IonServer {
   private _eventEmitter: IonEventEmitter;
   private _routes: { [name: string]: [URLPattern, Function][] };
+  private _middlewares: Array<
+    (ctx: {
+      req: IonRequest;
+      res: IonResponse;
+      onComplete: (cb: () => any) => any;
+    }) => void
+  >;
 
   constructor(public options?: IonServerOptions) {
     this._eventEmitter = new IonEventEmitter();
     this._routes = {};
-
     this.options = {
       host: options?.host ?? "0.0.0.0",
       port: options?.port ?? 8080,
     };
+    this._middlewares = [];
+  }
+
+  public use(
+    middleware: (
+      ctx: {
+        req: IonRequest;
+        res: IonResponse;
+        onComplete: (cb: () => any) => any;
+      },
+    ) => void,
+  ) {
+    this._middlewares.push(middleware);
   }
 
   public on<F extends Function>(type: string, cb: F) {
@@ -90,16 +109,28 @@ export class IonServer {
     const httpConn: Deno.HttpConn = Deno.serveHttp(conn);
 
     for await (const { request, respondWith } of httpConn) {
+      let onCompleteFn: (() => any) | null = null;
+
+      const onComplete = (cb: () => any) => onCompleteFn = cb;
+
       try {
         let found: boolean = false;
+
+        const req: IonRequest = new IonRequest(request);
+        const res: IonResponse = new IonResponse();
+
+        for (const middleware of this._middlewares) {
+          middleware({ req, res, onComplete });
+        }
+
+        this._eventEmitter.dispatch("REQ", { req, res, onComplete });
 
         if (this.isMethodDefined(request.method)) {
           for (const [pattern, handler] of this._routes[request.method]) {
             if (this.isRouteMatch(pattern, request.url)) {
-              const req: IonRequest = new IonRequest(request, pattern);
-              const res: IonResponse = new IonResponse();
+              req.setPattern(pattern);
 
-              const response: any = handler({ req, res });
+              const response: any = await handler({ req, res });
 
               if (
                 typeof response === "string" && !res.headers["Content-Type"]
@@ -130,6 +161,10 @@ export class IonServer {
         }
       } catch (e) {
         console.log(e);
+      } finally {
+        if (onCompleteFn) {
+          (onCompleteFn as Function).call(null);
+        }
       }
     }
   }

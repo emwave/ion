@@ -8,10 +8,14 @@ export class IonRequest {
 
   constructor(
     private _req: Request,
-    private _pattern: URLPattern,
+    private _pattern?: URLPattern,
   ) {
     this.method = _req.method;
     this.url = new URL(_req.url);
+  }
+
+  public setPattern(pattern: URLPattern) {
+    this._pattern = pattern;
   }
 
   public get headers() {
@@ -35,8 +39,10 @@ export class IonRequest {
   }
 
   public get params() {
-    const match = this._pattern.exec(this.url.href);
-
-    return match?.pathname.groups || {};
+    if (this._pattern) {
+      const match = this._pattern.exec(this.url.href);
+      return match?.pathname.groups || {};
+    }
+    return {};
   }
 }
