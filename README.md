@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # ion
 
 ∿ A comprehensive framework for server-side applications. Being built on top of
@@ -102,4 +101,3 @@ server.use(() => {});
 // body parser(s)
 server.on(({ req }: any) => console.log(req.body));
 ```
->>>>>>> 0cf1310ab46703e345c2458acafda7ef6e132c57
