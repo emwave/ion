@@ -135,7 +135,7 @@ export class IonServer {
             if (this.isRouteMatch(pattern, request.url)) {
               req.setPattern(pattern);
 
-              const response: any = await handler({ req, res });
+              const response: any = await handler({ req, res }, this.refs);
 
               if (
                 typeof response === "string" && !res.headers["Content-Type"]
