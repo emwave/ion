@@ -8,7 +8,7 @@ REST/GraphQL and many others.
 
 ```ts
 // app.ts
-import { Server } from "https://deno.land/x/ion@0.1.1/mod.ts";
+import { Server } from "https://deno.land/x/ion@0.1.3/mod.ts";
 
 const server = new Server();
 
