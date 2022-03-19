@@ -111,7 +111,11 @@ export class IonServer {
   private async _handle(conn: Deno.Conn) {
     const httpConn: Deno.HttpConn = Deno.serveHttp(conn);
 
-    for await (const { request, respondWith } of httpConn) {
+    // for await (const { request, respondWith } of httpConn) {
+    for await (const reqEvent of httpConn) {
+
+      if (!reqEvent) continue;
+
       let onCompleteFn: (() => any) | null = null;
 
       const onComplete = (cb: () => any) => onCompleteFn = cb;
@@ -119,7 +123,7 @@ export class IonServer {
       try {
         let found: boolean = false;
 
-        const req: IonRequest = new IonRequest(request);
+        const req: IonRequest = new IonRequest(reqEvent.request);
         const res: IonResponse = new IonResponse();
 
         await req.parseBody();
@@ -130,9 +134,9 @@ export class IonServer {
 
         this._eventEmitter.dispatch("REQ", { req, res, onComplete });
 
-        if (this.isMethodDefined(request.method)) {
-          for (const [pattern, handler] of this._routes[request.method]) {
-            if (this.isRouteMatch(pattern, request.url)) {
+        if (this.isMethodDefined(reqEvent.request.method)) {
+          for (const [pattern, handler] of this._routes[reqEvent.request.method]) {
+            if (this.isRouteMatch(pattern, reqEvent.request.url)) {
               req.setPattern(pattern);
 
               let response: any = await handler({ req, res }, this.refs);
@@ -150,20 +154,25 @@ export class IonServer {
                 response = JSON.stringify(response)
               }
 
-              await respondWith(
-                new Response(response, {
-                  status: res.status,
-                  statusText: res.statusText,
-                  headers: new Headers(res.headers),
-                }),
-              );
+              try {
+                await reqEvent.respondWith(
+                  new Response(response, {
+                    status: res.status,
+                    statusText: res.statusText,
+                    headers: new Headers(res.headers),
+                  }),
+                );
+              }
+              catch(e) {
+                console.log(e)
+              }
 
               found = true;
             }
           }
         }
         if (!found) {
-          await respondWith(new Response("Not Found", { status: 404 }));
+          await reqEvent.respondWith(new Response("Not Found", { status: 404 }));
         }
       } catch (e) {
         console.log(e);
